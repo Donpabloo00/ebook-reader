@@ -85,6 +85,87 @@ body {
   user-select: none;
 }
 
+/* Teanc de pagini pe margini — grosime fizică a cărții */
+.book-stage {
+  position: relative;
+}
+.book-stage::before,
+.book-stage::after {
+  content: "";
+  position: absolute;
+  top: 1.2%;
+  bottom: 1.2%;
+  width: 10px;
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.45s cubic-bezier(0.22, 0.68, 0.36, 1.05),
+    opacity 0.45s ease;
+}
+.book-stage::before {
+  left: -7px;
+  background: repeating-linear-gradient(
+    to left,
+    #efe6d2 0px,
+    #efe6d2 1.6px,
+    #d8cbae 1.6px,
+    #d8cbae 3.2px
+  );
+  box-shadow: -3px 3px 8px rgba(70, 57, 42, 0.22);
+  transform-origin: right center;
+}
+.book-stage::after {
+  right: -7px;
+  background: repeating-linear-gradient(
+    to right,
+    #efe6d2 0px,
+    #efe6d2 1.6px,
+    #d8cbae 1.6px,
+    #d8cbae 3.2px
+  );
+  box-shadow: 3px 3px 8px rgba(70, 57, 42, 0.22);
+  transform-origin: left center;
+}
+
+/* În timpul întoarcerii: cartea se ridică ușor, teancul se desface */
+.book-stage.flipping {
+  transform: translateY(-6px) scale(1.008);
+}
+.book-stage.flipping::before {
+  transform: perspective(600px) rotateY(-14deg) translateX(-3px);
+}
+.book-stage.flipping::after {
+  transform: perspective(600px) rotateY(14deg) translateX(3px);
+}
+.book-stage {
+  transition: transform 0.5s cubic-bezier(0.22, 0.68, 0.36, 1.05);
+}
+
+/* Umbră ambientă mai bogată sub carte */
+.book-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 94%;
+  height: 34px;
+  transform: translateX(-50%);
+  border-radius: 100%;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgba(40, 28, 12, 0.38) 0%,
+    rgba(40, 28, 12, 0.18) 55%,
+    rgba(40, 28, 12, 0) 100%
+  );
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: 0;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.book-stage.flipping .book-shadow {
+  transform: translateX(-50%) scaleX(1.06) translateY(4px);
+  opacity: 0.85;
+}
+
 @keyframes hint-float {
   0%,
   100% {

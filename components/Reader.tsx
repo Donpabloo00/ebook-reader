@@ -63,6 +63,7 @@ export default function Reader() {
   const [dragOver, setDragOver] = useState(false);
   const [hint, setHint] = useState(true);
   const [uploadTick, setUploadTick] = useState(0);
+  const [flipping, setFlipping] = useState(false);
 
   const imagesRef = useRef<(string | null)[]>([]);
   const renderingRef = useRef<Set<number>>(new Set());
@@ -283,6 +284,20 @@ export default function Reader() {
     [],
   );
 
+  /* Tranziție "lift & settle": sincronizată cu starea internă a răsfoirii.
+     changeState emite „flipping" la începutul întoarcerii și „read" la final. */
+  const flipTimer = useRef(0);
+  const onFlipState = useCallback((e: { data: string }) => {
+    window.clearTimeout(flipTimer.current);
+    if (e.data === "flipping") {
+      setFlipping(true);
+      flipTimer.current = window.setTimeout(() => setFlipping(false), 1150);
+    } else if (e.data === "read") {
+      setFlipping(false);
+    }
+  }, []);
+  useEffect(() => () => window.clearTimeout(flipTimer.current), []);
+
   const total = leaves.length;
 
   const pageLabel = useMemo(() => {
@@ -407,8 +422,8 @@ export default function Reader() {
 
       {/* Scena */}
       <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-6">
-        <div className="relative inline-block">
-          <div className="pointer-events-none absolute -bottom-7 left-1/2 h-8 w-[88%] -translate-x-1/2 rounded-[100%] bg-black/25 blur-xl" />
+        <div className={`book-stage relative inline-block ${flipping ? "flipping" : ""}`}>
+          <div className="book-shadow" />
           <HTMLFlipBook
             key={`${mode}-${total}-${size.w}x${size.h}-${uploadTick}`}
             ref={flipRef}
@@ -431,10 +446,11 @@ export default function Reader() {
             useMouseEvents={true}
             disableFlipByClick={false}
             swipeDistance={20}
-            flippingTime={620}
-            maxShadowOpacity={0.5}
+            flippingTime={950}
+            maxShadowOpacity={0.85}
             className="book3d"
             style={{}}
+            onChangeState={onFlipState}
             onFlip={(e) => setLeaf(e.data)}
           >
             {leaves.map((d, i) => (
